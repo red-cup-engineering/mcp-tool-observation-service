@@ -19,7 +19,7 @@
     "verify": "npm run check && npm test && npm pack --dry-run"
   },
   "dependencies": {
-    "@red-cup-engineering/public-https-url-admission-service": "0.1.0",
+    "@red-cup-engineering/canonicalize-https-url-service": "0.1.0",
     "@red-cup-engineering/relation-model-notation-json-codec": "0.0.2",
     "@red-cup-engineering/relation-model-notation-typing": "0.0.1",
     "@red-cup-engineering/semantic-content-identify-service": "0.2.2"

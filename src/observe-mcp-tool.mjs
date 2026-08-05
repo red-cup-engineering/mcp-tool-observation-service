@@ -1,6 +1,6 @@
 import {
-  admitPublicHttpsUrl,
-} from "@red-cup-engineering/public-https-url-admission-service";
+  canonicalizeHttpsUrl,
+} from "@red-cup-engineering/canonicalize-https-url-service";
 import {
   EMPTY_WITNESS_ROOT,
   identifyNormalizedSemanticContent,
@@ -66,7 +66,7 @@ async function rpc(fetchImpl, endpoint, protocolVersion, sessionId, id, method, 
 
 export async function observeMcpTool(input, options = {}) {
   const candidate = record(input, "input");
-  const endpoint = admitPublicHttpsUrl(candidate.endpoint, "endpoint", { requireDns: true });
+  const endpoint = canonicalizeHttpsUrl(candidate.endpoint, "endpoint", { requireDns: true });
   const toolName = exactName(candidate.toolName);
   const requestedVersion = typeof candidate.protocolVersion === "string"
     ? candidate.protocolVersion
