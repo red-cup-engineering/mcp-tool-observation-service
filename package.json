@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/mcp-tool-observation-service",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Observe and optionally invoke one named tool through an MCP Streamable HTTP boundary.",
   "type": "module",
   "license": "MIT",
