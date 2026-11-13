@@ -5,7 +5,7 @@ import {
   EMPTY_WITNESS_ROOT,
   identifyNormalizedSemanticContent,
 } from "@red-cup-engineering/semantic-content-identify-service";
-import { jsonToTerm } from "@red-cup-engineering/typed-computer-code-engine/sen/json";
+import { jsonToTerm } from "@red-cup-engineering/computer-code-engine/sen/json";
 import { inferTy } from "@red-cup-engineering/relation-model-notation-typing";
 
 const DEFAULT_PROTOCOL_VERSION = "2025-06-18";
