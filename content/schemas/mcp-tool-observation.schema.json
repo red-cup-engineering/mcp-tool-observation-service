@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://red-cup-engineering.github.io/mcp-tool-observation-service/schemas/mcp-tool-observation.schema.json",
+  "title": "MCP tool observation",
+  "type": "object",
+  "required": ["id", "endpoint", "protocolVersion", "serverInfo", "tool"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^ni:///sha-256;[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$" },
+    "endpoint": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "protocolVersion": { "type": "string" },
+    "serverInfo": { "type": "object" },
+    "tool": { "type": "object" },
+    "callResult": {}
+  },
+  "additionalProperties": false
+}
