@@ -7,7 +7,7 @@ import {
 const DEFAULT_PROTOCOL_VERSION = "2025-06-18";
 const MAX_TOOL_PAGES = 128;
 
-export class McpToolObservationRefusal extends Error {
+export class McpToolObservationRejection extends Error {
   constructor(reason, evidence = undefined) {
     super(reason);
     this.name = "McpToolObservationRefusal";
@@ -18,14 +18,14 @@ export class McpToolObservationRefusal extends Error {
 
 function record(value, label) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
-    throw new McpToolObservationRefusal(`${label} must be an object`, value);
+    throw new McpToolObservationRejection(`${label} must be an object`, value);
   }
   return value;
 }
 
 function exactName(value) {
   if (typeof value !== "string" || value.length === 0 || value.length > 256) {
-    throw new McpToolObservationRefusal("toolName must be one bounded non-empty string");
+    throw new McpToolObservationRejection("toolName must be one bounded non-empty string");
   }
   return value;
 }
@@ -44,15 +44,15 @@ async function rpc(fetchImpl, endpoint, protocolVersion, sessionId, id, method, 
     redirect: "error",
   });
   if (!response || typeof response !== "object" || typeof response.json !== "function") {
-    throw new McpToolObservationRefusal(`${method} did not return an HTTP response`);
+    throw new McpToolObservationRejection(`${method} did not return an HTTP response`);
   }
   const payload = record(await response.json(), `${method} response`);
-  if (!response.ok) throw new McpToolObservationRefusal(`${method} returned HTTP ${response.status}`, payload);
+  if (!response.ok) throw new McpToolObservationRejection(`${method} returned HTTP ${response.status}`, payload);
   if (payload.jsonrpc !== "2.0" || payload.id !== id) {
-    throw new McpToolObservationRefusal(`${method} returned a mismatched JSON-RPC envelope`, payload);
+    throw new McpToolObservationRejection(`${method} returned a mismatched JSON-RPC envelope`, payload);
   }
   if (payload.error !== undefined) {
-    throw new McpToolObservationRefusal(`${method} returned an MCP error`, payload.error);
+    throw new McpToolObservationRejection(`${method} returned an MCP error`, payload.error);
   }
   return {
     result: record(payload.result, `${method} result`),
@@ -68,7 +68,7 @@ export async function observeMcpTool(input, options = {}) {
     ? candidate.protocolVersion
     : DEFAULT_PROTOCOL_VERSION;
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
-  if (typeof fetchImpl !== "function") throw new McpToolObservationRefusal("fetch implementation is unavailable");
+  if (typeof fetchImpl !== "function") throw new McpToolObservationRejection("fetch implementation is unavailable");
 
   const initialized = await rpc(fetchImpl, endpoint, requestedVersion, undefined, 1, "initialize", {
     protocolVersion: requestedVersion,
@@ -77,7 +77,7 @@ export async function observeMcpTool(input, options = {}) {
   });
   const protocolVersion = initialized.result.protocolVersion;
   if (typeof protocolVersion !== "string" || protocolVersion.length === 0) {
-    throw new McpToolObservationRefusal("initialize omitted protocolVersion", initialized.result);
+    throw new McpToolObservationRejection("initialize omitted protocolVersion", initialized.result);
   }
   const serverInfo = record(initialized.result.serverInfo, "initialize serverInfo");
 
@@ -95,24 +95,24 @@ export async function observeMcpTool(input, options = {}) {
       cursor === undefined ? {} : { cursor },
     );
     if (!Array.isArray(listed.result.tools)) {
-      throw new McpToolObservationRefusal("tools/list omitted tools", listed.result);
+      throw new McpToolObservationRejection("tools/list omitted tools", listed.result);
     }
     tools.push(...listed.result.tools.map((tool) => record(tool, "tool")));
     const nextCursor = listed.result.nextCursor;
     if (nextCursor === undefined) break;
     if (typeof nextCursor !== "string" || nextCursor.length === 0 || cursors.has(nextCursor)) {
-      throw new McpToolObservationRefusal("tools/list returned an invalid pagination cursor", nextCursor);
+      throw new McpToolObservationRejection("tools/list returned an invalid pagination cursor", nextCursor);
     }
     cursors.add(nextCursor);
     cursor = nextCursor;
     if (page === MAX_TOOL_PAGES - 1) {
-      throw new McpToolObservationRefusal("tools/list exceeded the pagination bound");
+      throw new McpToolObservationRejection("tools/list exceeded the pagination bound");
     }
   }
 
   const matches = tools.filter((tool) => tool.name === toolName);
   if (matches.length !== 1) {
-    throw new McpToolObservationRefusal(
+    throw new McpToolObservationRejection(
       matches.length === 0 ? `MCP tool not found: ${toolName}` : `MCP tool name is not unique: ${toolName}`,
       tools,
     );
@@ -144,7 +144,7 @@ export async function observeMcpTool(input, options = {}) {
   try {
     identity = identifyJsonSemanticContent({ objectKind: "mcp.tool-observation", value: body, witnessRoot: EMPTY_WITNESS_ROOT });
   } catch {
-    throw new McpToolObservationRefusal("MCP observation does not derive a SEN semantic type", body);
+    throw new McpToolObservationRejection("MCP observation does not derive a SEN semantic type", body);
   }
   return Object.freeze({ id: identity.id, ...body });
 }
